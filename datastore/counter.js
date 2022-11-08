@@ -18,8 +18,10 @@ const zeroPaddedNumber = (num) => {
 const readCounter = (callback) => {
   fs.readFile(exports.counterFile, (err, fileData) => {
     if (err) {
+      console.log('did not read file returning 0');
       callback(null, 0);
     } else {
+      console.log('read file and got: ', Number(fileData));
       callback(null, Number(fileData));
     }
   });
@@ -31,6 +33,7 @@ const writeCounter = (count, callback) => {
     if (err) {
       throw ('error writing counter');
     } else {
+      console.log('writing file with: ', Number(counterString));
       callback(null, counterString);
     }
   });
@@ -38,13 +41,36 @@ const writeCounter = (count, callback) => {
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  counter = counter + 1;
-  return zeroPaddedNumber(counter);
+var cb = (err, data) => {
+  if (err) {
+    console.log('callback errored');
+    return err;
+  }
+  if (Number(data) === null) {
+    console.log('data is undefined');
+    data = 0;
+  }
+  console.log('cb returning data: ', data);
+  return data;
 };
+
+exports.getNextUniqueId = () => {
+  // read counter file to get current counter
+  var counter = readCounter(cb);
+  // increment current counter by 1
+  console.log('counter in main:', counter);
+  // write current counter to file
+  // return current counter
+  counter = counter + 1;
+  // return writeCounter, it runs cb which returns our zeroPaddedNumber(count)
+  return writeCounter(counter, cb);
+};
+
+
 
 
 
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
 
+// counterFile = datastore/counter.js/counter.txt
 exports.counterFile = path.join(__dirname, 'counter.txt');
