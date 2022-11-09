@@ -17,8 +17,14 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  // fs.readdirSync(path, options)
+  var data = fs.readdirSync(exports.dataDir);
+  data = _.map(data, (id) => {
+    var object = {};
+    var numberOnly = id.slice(0, 5);
+    object['id'] = numberOnly;
+    object['text'] = numberOnly;
+    return object;
   });
   callback(null, data);
 };
