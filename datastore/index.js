@@ -30,12 +30,15 @@ exports.readAll = (callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  var filePath = path.join(exports.dataDir, id + '.txt');
+  fs.readFile(filePath, (err, fileData) => {
+    if (err) {
+      console.log('did not read file');
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      callback(null, {id: id.slice(0, 5), text: fileData.toString()});
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
