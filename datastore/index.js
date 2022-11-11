@@ -17,25 +17,27 @@ exports.create = (text, callback) => {
   });
 };
 
-exports.readAll = () => {
+
+exports.readAll = (callback) => {
   Promise.promisifyAll(fs);
   var readOneAsync = Promise.promisify(exports.readOne);
   // fs.readdirSync(path, options)
-  var data = fs.readdirAsync(exports.dataDir)
-    .then((dirArray) => {
-      dirArray = _.map(dirArray, (id) => {
-        var fileContents = fs.readFileAsync(exports.dataDir + '/' + id)
-          .then ((fileData) => {
-            var object = {};
-            var numberOnly = id.slice(0, 5);
-            object['id'] = numberOnly;
-            object['text'] = fileData.toString();
-          });
-      });
-      console.log(dirArray);
-      return dirArray;
+  Promise.all(
+    fs.readdirAsync(exports.dataDir)
+      .then (function (result) {
+        result = _.map(result, (directory) => {
+          id = directory.slice(0, 5);
+          return readOneAsync(id);
+        });
+        return result;
+      })
+  )
+    .then(function (result) {
+      console.log('should be our arrays', (result), result.length);
+      return callback(null, result);
     });
 };
+
 
 exports.readOne = (id, callback) => {
   var filePath = path.join(exports.dataDir, id + '.txt');
@@ -48,6 +50,8 @@ exports.readOne = (id, callback) => {
     }
   });
 };
+
+
 
 exports.update = (id, text, callback) => {
   var filePath = path.join(exports.dataDir, id + '.txt');
